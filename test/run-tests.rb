@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby 
+
 # JBoss, Home of Professional Open Source
 # Copyright 2009, Red Hat Middleware LLC, and individual contributors
 # by the @authors tag. See the copyright.txt in the distribution for a
@@ -18,36 +20,19 @@
 # Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 # 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 
-require 'rake/tasklib'
+require 'rubygems'
+require 'test/unit/ui/console/testrunner'
+require 'test/unit'
 
-require 'jboss-cloud/appliance-source.rb'
-require 'jboss-cloud/appliance-spec.rb'
-require 'jboss-cloud/appliance-rpm.rb'
-require 'jboss-cloud/appliance-kickstart.rb'
-require 'jboss-cloud/appliance-image.rb'
+$: << File.dirname("#{File.dirname( __FILE__ )}/../lib/jboss-cloud")
 
-module JBossCloud
-  
-  class Appliance < Rake::TaskLib
-    
-    def initialize( config, appliance_config, appliance_def )
-      @config            = config
-      @appliance_def     = appliance_def
-      @appliance_config  = appliance_config
-      
-      define
-    end
-    
-    def define
-      define_precursors
-    end
-    
-    def define_precursors
-      JBossCloud::ApplianceSource.new( @config, @appliance_config )
-      JBossCloud::ApplianceSpec.new( @config, @appliance_config )
-      JBossCloud::ApplianceRPM.new( @config, @appliance_config )
-      JBossCloud::ApplianceKickstart.new( @config, @appliance_config )
-      JBossCloud::ApplianceImage.new( @config, @appliance_config )
-    end
-  end
-end
+Dir.chdir( File.dirname( __FILE__ ) )
+
+# tests to run
+require 'jboss-cloud/validator/appliance_validator_test'
+
+require 'jboss-cloud/config_test'
+require 'jboss-cloud/appliance_config_test'
+
+require 'jboss-cloud/appliance_vmware_image_test'
+require 'jboss-cloud/appliance_kickstart_test'

@@ -1,40 +1,60 @@
+#!/usr/bin/env ruby 
+
+# JBoss, Home of Professional Open Source
+# Copyright 2009, Red Hat Middleware LLC, and individual contributors
+# by the @authors tag. See the copyright.txt in the distribution for a
+# full listing of individual contributors.
+#
+# This is free software; you can redistribute it and/or modify it
+# under the terms of the GNU Lesser General Public License as
+# published by the Free Software Foundation; either version 2.1 of
+# the License, or (at your option) any later version.
+#
+# This software is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this software; if not, write to the Free
+# Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+# 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 
 module JBossCloud
   class ApplianceRPM < JBossCloud::RPM
-
-    def initialize( config )
-      @config       = config
-      @topdir       = Config.get.dir_top
-      @version      = Config.get.version
-      @release      = Config.get.release
+    
+    def initialize( config, appliance_config )
+      @config            = config
+      @appliance_config  = appliance_config
+      
       define
     end
-
+    
     def define
-      appliance_build_dir   = "#{Config.get.dir_build}/appliances/#{@config.arch}/#{@config.name}"
-      spec_file             = "#{appliance_build_dir}/#{@config.name}.spec"
+      appliance_build_dir   = "#{@config.dir_build}/#{@appliance_config.appliance_path}"
+      spec_file             = "#{appliance_build_dir}/#{@appliance_config.name}.spec"
       simple_name           = File.basename( spec_file, ".spec" )
-      rpm_file              = "#{@topdir}/RPMS/noarch/#{simple_name}-#{@version}-#{@release}.noarch.rpm"
-
-      JBossCloud::RPM.provides[simple_name] = "#{simple_name}-#{@version}-#{@release}"
-
+      rpm_file              = "#{@config.dir_top}/#{@appliance_config.os_path}/RPMS/noarch/#{simple_name}-#{@config.version_with_release}.noarch.rpm"
+      
+      JBossCloud::RPM.provides[simple_name] = "#{simple_name}-#{@config.version_with_release}"
+      
       desc "Build #{simple_name} RPM."
       task "rpm:#{simple_name}"=>[ rpm_file ]
-
-      file rpm_file => [ spec_file, "#{@topdir}/SOURCES/#{simple_name}-#{@version}.tar.gz", 'rpm:topdir' ] do
+      
+      file rpm_file => [ spec_file, "#{@config.dir_top}/#{@appliance_config.os_path}/SOURCES/#{simple_name}-#{@config.version}.tar.gz", 'rpm:topdir' ] do
         Dir.chdir( File.dirname( spec_file ) ) do
-          exit_status = execute_command "rpmbuild --define '_topdir #{Config.get.dir_root}/#{@topdir}' --target noarch -ba #{simple_name}.spec"
+          exit_status = execute_command "rpmbuild --define '_topdir #{@config.dir_root}/#{@config.dir_top}/#{@config.os_name}/#{@config.os_version}' --target noarch -ba #{simple_name}.spec"
           unless exit_status
             puts "\nBuilding #{simple_name} failed! Hint: consult above messages.\n\r"
             abort
           end
         end
       end
-
+      
       file rpm_file=> [ 'rpm:dkms-open-vm-tools' ]
       file rpm_file=> [ 'rpm:vm2-support' ]
       file rpm_file=> [ 'rpm:oddthesis-repo' ]
-
+      
     end
     
   end

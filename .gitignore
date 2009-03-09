@@ -6,3 +6,7 @@ rpms-cache
 sources-cache
 extra-rpms
 wizard
+*~
+.loadpath
+.project
+.settings
