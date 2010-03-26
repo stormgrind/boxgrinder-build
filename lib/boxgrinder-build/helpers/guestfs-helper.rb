@@ -57,10 +57,12 @@ module BoxGrinder
       @guestfs.wait_ready
       @log.debug "Guestfs launched."
 
-      if @guestfs.list_partitions.size > 0
-        partition_to_mount = "/dev/sda1"
+      partitions = @guestfs.list_partitions
+
+      if partitions.size > 0
+        partition_to_mount = partitions.first
       else
-        partition_to_mount = "/dev/sda"
+        partition_to_mount = @guestfs.list_devices.first
       end
 
       @log.debug "Mounting root partition..."

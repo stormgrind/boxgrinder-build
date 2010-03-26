@@ -20,6 +20,7 @@
 
 require 'rake'
 require 'boxgrinder-core/defaults'
+require 'boxgrinder-build/defaults'
 require 'boxgrinder-core/models/config'
 require 'boxgrinder-core/models/appliance-config'
 require 'boxgrinder-core/helpers/appliance-config-helper'
